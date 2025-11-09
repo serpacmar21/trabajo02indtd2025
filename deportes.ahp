@@ -1,0 +1,148 @@
+Version: 2.0
+Alternatives: &alternatives
+  Natacion:
+  Running:
+  CrossFit:
+  Ciclismo:
+  Yoga:
+
+Goal:
+  name: Deporte mas completo para una vida saludable
+  preferences:
+    pairwise:
+      - [Salud Fisica, Salud Mental, 3]
+      - [Salud Fisica, Viabilidad, 5]
+      - [Salud Mental, Viabilidad, 3]
+  children:
+    Salud Fisica:
+      preferences:
+        pairwise:
+          - [Salud Cardiovascular, Desarrollo Muscular, 1]
+          - [Salud Cardiovascular, Flexibilidad y Movilidad, 3]
+          - [Salud Cardiovascular, Bajo Impacto Articular, 3]
+          - [Desarrollo Muscular, Flexibilidad y Movilidad, 3]
+          - [Desarrollo Muscular, Bajo Impacto Articular, 3]
+          - [Flexibilidad y Movilidad, Bajo Impacto Articular, 1/3]
+      children:
+        Salud Cardiovascular:
+          preferences:
+            pairwise:
+              - [Natacion, Running, 1]
+              - [Natacion, CrossFit, 3]
+              - [Natacion, Ciclismo, 1]
+              - [Natacion, Yoga, 7]
+              - [Running, CrossFit, 3]
+              - [Running, Ciclismo, 1]
+              - [Running, Yoga, 7]
+              - [CrossFit, Ciclismo, 1/3]
+              - [CrossFit, Yoga, 5]
+              - [Ciclismo, Yoga, 7]
+          children: *alternatives
+        Desarrollo Muscular:
+          preferences:
+            pairwise:
+              - [Natacion, Running, 3]
+              - [Natacion, CrossFit, 1/5]
+              - [Natacion, Ciclismo, 3]
+              - [Natacion, Yoga, 5]
+              - [Running, CrossFit, 1/7]
+              - [Running, Ciclismo, 1]
+              - [Running, Yoga, 3]
+              - [CrossFit, Ciclismo, 7]
+              - [CrossFit, Yoga, 9]
+              - [Ciclismo, Yoga, 3]
+          children: *alternatives
+        Flexibilidad y Movilidad:
+          preferences:
+            pairwise:
+              - [Natacion, Running, 3]
+              - [Natacion, CrossFit, 1]
+              - [Natacion, Ciclismo, 3]
+              - [Natacion, Yoga, 1/5]
+              - [Running, CrossFit, 1/3]
+              - [Running, Ciclismo, 1]
+              - [Running, Yoga, 1/7]
+              - [CrossFit, Ciclismo, 3]
+              - [CrossFit, Yoga, 1/5]
+              - [Ciclismo, Yoga, 1/7]
+          children: *alternatives
+        Bajo Impacto Articular:
+          preferences:
+            pairwise:
+              - [Natacion, Running, 7]
+              - [Natacion, CrossFit, 5]
+              - [Natacion, Ciclismo, 3]
+              - [Natacion, Yoga, 1]
+              - [Running, CrossFit, 1/3]
+              - [Running, Ciclismo, 1/5]
+              - [Running, Yoga, 1/7]
+              - [CrossFit, Ciclismo, 1/3]
+              - [CrossFit, Yoga, 1/5]
+              - [Ciclismo, Yoga, 1/3]
+          children: *alternatives
+    Salud Mental:
+      preferences:
+        pairwise:
+          - [Reduccion Estres, Componente Social, 3]
+      children:
+        Reduccion Estres:
+          preferences:
+            pairwise:
+              - [Natacion, Running, 1]
+              - [Natacion, CrossFit, 5]
+              - [Natacion, Ciclismo, 1]
+              - [Natacion, Yoga, 1/5]
+              - [Running, CrossFit, 5]
+              - [Running, Ciclismo, 1]
+              - [Running, Yoga, 1/5]
+              - [CrossFit, Ciclismo, 1/5]
+              - [CrossFit, Yoga, 1/9]
+              - [Ciclismo, Yoga, 1/5]
+          children: *alternatives
+        Componente Social:
+          preferences:
+            pairwise:
+              - [Natacion, Running, 1/3]
+              - [Natacion, CrossFit, 1/7]
+              - [Natacion, Ciclismo, 1/3]
+              - [Natacion, Yoga, 1]
+              - [Running, CrossFit, 1/5]
+              - [Running, Ciclismo, 1]
+              - [Running, Yoga, 3]
+              - [CrossFit, Ciclismo, 5]
+              - [CrossFit, Yoga, 7]
+              - [Ciclismo, Yoga, 3]
+          children: *alternatives
+    Viabilidad:
+      preferences:
+        pairwise:
+          - [Coste Economico, Accesibilidad, 1/3]
+      children:
+        Coste Economico:
+          preferences:
+            pairwise:
+              - [Natacion, Running, 1/3]
+              - [Natacion, CrossFit, 3]
+              - [Natacion, Ciclismo, 5]
+              - [Natacion, Yoga, 1]
+              - [Running, CrossFit, 7]
+              - [Running, Ciclismo, 9]
+              - [Running, Yoga, 3]
+              - [CrossFit, Ciclismo, 3]
+              - [CrossFit, Yoga, 1/5]
+              - [Ciclismo, Yoga, 1/7]
+          children: *alternatives
+        Accesibilidad:
+          preferences:
+            pairwise:
+              - [Natacion, Running, 1/5]
+              - [Natacion, CrossFit, 1]
+              - [Natacion, Ciclismo, 3]
+              - [Natacion, Yoga, 1/5]
+              - [Running, CrossFit, 5]
+              - [Running, Ciclismo, 7]
+              - [Running, Yoga, 1]
+              - [CrossFit, Ciclismo, 3]
+              - [CrossFit, Yoga, 1/5]
+              - [Ciclismo, Yoga, 1/7]
+          children: *alternatives
