@@ -166,7 +166,7 @@ print(paste("Ratio de Inconsistencia (C1-Sub):", round(incons_c1_sub_R$RI.coef.i
 mat_c2_sub <- multicriterio.crea.matrizvaloraciones_mej(
   vector_valoraciones_diagsup = c(3),
   numalternativas = 2,
-  v.nombres.alternativas = c("Reducción Estres", "Componente Social")
+  v.nombres.alternativas = c("Reduccion Estres", "Componente Social")
 )
 pesos_c2_sub_R <- multicriterio.metodoAHP.variante3.basico(mat_c2_sub)$valoraciones.ahp
 incons_c2_sub_R <- multicriterio.metodoAHP.coef.inconsistencia(mat_c2_sub)
@@ -404,6 +404,7 @@ Realizamos un análisis iterativo para encontrar el núcleo del grafo de superac
 Primero, ejecutamos el método con las 5 alternativas.
 
 ```{r}
+library(qgraph)
 #Ejecutar ELECTRE I (Iteración 1) 
 
 print("--- Ejecutando ELECTRE I: Iteración 1 (Todas las alternativas) ---")
@@ -437,6 +438,7 @@ qgraph::qgraph(salida_electre1$relacion.dominante,
 El núcleo de la Iteración 1 nos devuelve 4 alternativas. Repetimos el análisis solo con estas alternativas para intentar desempatar.
 
 ```{r}
+library(qgraph)
 # Ejecutar ELECTRE I (Iteración 2)
 
 # 1. Identificamos las alternativas del núcleo anterior
@@ -482,3 +484,164 @@ El método ELECTRE I se ha ejecutado **siguiendo el paso a paso** requerido.
 2.  **Iteración 2:** Para desempatar, se repite el análisis filtrando solo por las alternativas del núcleo. El grafo resultante **no muestra ninguna flecha**, lo que significa que existe una **relación de incomparabilidad** entre estas cuatro alternativas. El núcleo final sigue siendo **[Natacion, Running, CrossFit, Yoga]**.
 
 **Conclusión:** ELECTRE I no nos da un único ganador. Concluye que **Natación, Running, CrossFit y Yoga** son las mejores opciones y son **incomparables** entre sí; ninguna es estrictamente mejor que la otra bajo los parámetros $\alpha=0.7$ y los umbrales de discordancia establecidos.
+
+
+## 5. Método PROMETHEE II
+
+El método PROMETHEE II es un enfoque de decisión multicriterio que utiliza funciones de preferencia para comparar alternativas y generar un ranking completo basado en flujos netos.
+
+### 5.1. Definición de Parámetros y Funciones de Preferencia
+
+Este es el paso clave de PROMETHEE en el que se deben definir las funciones de preferencia generalizadas para cada uno de los 8 subcriterios.
+
+```{r}
+# --- Cargar Funciones
+source("teoriadecision_funciones_multicriterio.R")
+source("teoriadecision_funciones_multicriterio_utiles.R")
+source("teoriadecision_funciones_multicriterio_diagram.R")
+```
+
+
+```{r}
+# Definir Parámetros de PROMETHEE
+
+
+# 1. Matriz de Decisión: Reutilizamos la de ELECTRE
+
+
+# 2. Pesos: Reutilizamos los de ELECTRE (normalizados de AHP)
+
+pesos_promethee <- pesos_electre
+
+# 3. Vector min/max:
+vec_fminmax <- rep("max", ncol(matriz_electre))
+
+
+# 4. Tabla de Funciones de Preferencia (tab.fpref)
+tab_fpref_promethee <- matrix(
+  c(
+    3, 0.00, 0.20, 0,  # C1.1 Cardio: V-shape (p=20%)
+    3, 0.00, 0.25, 0,  # C1.2 Músculo: V-shape (p=25%)
+    5, 0.05, 0.25, 0,  # C1.3 Flexibilidad: Linear c/ indif (q=5%, p=25%)
+    2, 0.10, 0.00, 0,  # C1.4 Impacto: U-shape (q=10%)
+    3, 0.00, 0.20, 0,  # C2.1 Estrés: V-shape (p=20%)
+    1, 0.00, 0.00, 0,  # C2.2 Social: Usual
+    5, 0.05, 0.25, 0,  # C3.1 Coste: Linear c/ indif (q=5%, p=25%)
+    1, 0.00, 0.00, 0   # C3.2 Accesibilidad: Usual
+  ),
+  ncol = 4, 
+  byrow = TRUE
+)
+
+```
+
+### 5.2. Ejecución y Resultados de PROMETHEE II
+
+Ahora, ejecutamos el método PROMETHEE II. Este método generará un ranking completo de las 5 alternativas, ordenándolas por su flujo neto (Phi).
+
+```{r}
+# Ejecutar PROMETHEE
+# Ejecutamos las funciones y guardamos las tablas en una variable
+
+salida_promethee <- multicriterio.metodo.promethee_windows(
+  matdecision = matriz_electre,
+  tab.fpref = tab_fpref_promethee,
+  pesos.criterios = pesos_promethee,
+  fminmax = vec_fminmax
+)
+
+
+tablas_promethee <- multicriterio.metodo.promethee_windows_kableExtra(salida_promethee)
+
+```
+
+Tabla de Escenario (Parámetros)
+
+A continuación, se muestra la tabla de escenario que resume los parámetros, pesos y las funciones de preferencia utilizadas.
+
+```{r}
+# Mostrar Tabla de Escenario 
+
+tablas_promethee$tabEscenario
+```
+
+
+Tabla de Ranking (Resultados)
+
+La siguiente tabla muestra el ranking final de las alternativas. El orden se basa en el flujo neto (Phi).
+
+```{r}
+# Mostrar Tabla de Ranking
+
+tablas_promethee$tabAcciones
+```
+
+### 5.3. Conclusiones del Método PROMETHEE II
+
+El método PROMETHEE II, a diferencia de ELECTRE I, sí nos proporciona un **ranking completo** de las alternativas, basado en el Flujo Neto (Phi). Este flujo se calcula como la diferencia entre el flujo positivo (Phi.mas, o las fortalezas) y el flujo negativo (Phi.menos, o las debilidades) de cada alternativa.
+
+El ranking final obtenido es:
+
+1.  **Natacion (Phi = 0.1209)**
+2.  **Running (Phi = 0.0448)**
+3.  **Yoga (Phi = 0.0286)**
+4.  CrossFit (Phi = -0.0628)
+5.  Ciclismo (Phi = -0.1315)
+
+**Análisis de la tabla:**
+
+* **El Ganador:** Natacion emerge como la mejor alternativa. Es la que presenta el **mejor compromiso** (el mayor Flujo Neto). No tiene el Phi.mas más alto, pero sí tiene uno de los Phi.menos más bajos (0.2326), indicando que tiene pocas debilidades significativas frente al resto.
+
+* **Diferencia con AHP:** Es muy interesante ver que los ganadores de AHP (Yoga y CrossFit) caen al 3º y 4º puesto.
+    * **Yoga** tiene el Phi.mas (fortalezas) más alto de todos (0.4183), confirmando su dominio en criterios clave. Sin embargo, también tiene el segundo Phi.menos` (debilidades) más alto (0.3897), lo que penaliza su flujo neto.
+    * **CrossFit** tiene el Phi.menos más alto (0.4107), lo que significa que, aunque es muy fuerte en `Desarrollo Muscular, tiene debilidades muy marcadas en otros criterios (como Impacto o Coste) que hacen que las demás alternativas lo superen con frecuencia.
+
+* **Consistencia:** El método es consistente con AHP y ELECTRE al identificar a Ciclismo (Phi = -0.1315) como la alternativa menos preferida.
+
+**Conclusión:** PROMETHEE II, usando las funciones de preferencia definidas, favorece a la **Natación** por ser la alternativa más equilibrada y con menos debilidades.
+
+---
+
+## 6. Conclusiones Finales (Comparativa de Métodos)
+
+En este trabajo se han aplicado tres métodos de decisión multicriterio (AHP, ELECTRE I y PROMETHEE II) para resolver el problema de la "Selección del deporte más completo para una vida saludable".
+
+A continuación, se presenta una tabla comparativa con los rankings obtenidos por cada método:
+
+| Rango | Método AHP | Método ELECTRE I | Método PROMETHEE II |
+|:---|:---|:---|:---|
+| **1º** | Yoga (24.1%) | \multirow{4}{*}{Núcleo Incomparable} | **Natacion (Phi: 0.121)** |
+| **2º** | CrossFit (23.7%) | | Running (Phi: 0.045) |
+| **3º** | Natación (20.2%) | | Yoga (Phi: 0.029) |
+| **4º** | Running (17.3%) | | CrossFit (Phi: -0.063) |
+| **5º** | Ciclismo (14.7%) | *Eliminado (Dominado)* | Ciclismo (Phi: -0.132) |
+
+
+### Justificación de las Diferencias entre Métodos
+
+El análisis de los tres métodos revela diferencias significativas que se explican por la lógica interna de cada uno:
+
+1.  **Consistencia en la Peor Alternativa:** Los tres métodos son **unánimes** en identificar a Ciclismo como la alternativa menos preferida. AHP le da la puntuación más baja, ELECTRE I la elimina por ser dominada, y PROMETHEE II le da el flujo neto más negativo.
+
+2.  **Diferencia en los Ganadores (AHP vs. PROMETHEE):**
+    * **AHP** (un método de agregación total) da como ganador al **Yoga (24.1%)**. Esto se debe a que la estructura jerárquica y la multiplicación de pesos le dan una enorme importancia a su dominio en Reducción de Estrés (que aporta un 10.9% del total).
+    * **PROMETHEE II** (un método de flujos netos) da como ganador a la **Natación (Phi: 0.121)**. Este método favorece a la alternativa más equilibrada; aunque el Yoga tiene muchas fortalezas (Phi.mas de 0.4183), también tiene muchas debilidades (Phi.menos de 0.3897), lo que resulta en un flujo neto bajo. La Natación gana por tener el mejor balance entre fortalezas y debilidades (un Phi.menos muy bajo de 0.2326).
+
+3.  **El Caso de ELECTRE I (Incomparabilidad):**
+    * AHP y PROMETHEE **fuerzan un ranking completo**, obligando a comparar todas las alternativas.
+    * **ELECTRE I** (un método de superación) es el único que respeta la **incomparabilidad**. Concluye que Yoga, CrossFit, Natación y Running son incomparables. Esto se debe a los fuertes conflictos entre criterios (ej. Desarrollo Muscular del CrossFit vs. Reducción de Estrés del Yoga). Al no poder resolver estos conflictos con los parámetros dados, el método los agrupa en un "núcleo" de buenas soluciones.
+
+### Conclusión Final
+
+No existe un "mejor método", sino que cada uno aporta una visión diferente:
+* Si el decisor busca la **excelencia en un criterio clave** (Salud Mental), **AHP** le recomienda el **Yoga**.
+* Si el decisor busca la **alternativa más equilibrada y con menos debilidades**, **PROMETHEE II** le recomienda la **Natación**.
+* Si el decisor no está dispuesto a aceptar compensaciones entre criterios muy distintos, **ELECTRE I** le presenta un conjunto de **4 finalistas** igualmente válidos.
+
+
+
+
+
+
+
+
